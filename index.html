@@ -1,22 +1,74 @@
 <html>
+<html>
     <head>
-        <title>MSG SENDER</title>
+        <title>
+            location
+        </title>
     </head>
     <body>
         
-        <input type="text" class="msg">
-        <button type="button" onclick="sendwhatsapp()">send</button>
+        <h1>KIDSZOONER </h1>
+        <div id="output"></div>
 
-        <script>
-            function sendwhatsapp(){
-                var phonenumber = "+917001926534"
-                var msg = document.querySelector('.msg').value;
+        <div>
+        <input id="number" type="numric" placeholder="Phone number" >
+        <input id="name"type="text" placeholder="Relation">
+        <button onclick="send_handle()">send</button>
 
-                var url = "https.//wa.me/"+phonenumber + "?text="
-                +msg+"%0a"
-
-                window.open(url, ' blank').focus();
-            }
-        </script>
     </body>
+    <script>
+
+        if(!navigator.geolocation){
+            throw new Error("NO geolocation available");
+        }
+
+        function success(pos){
+
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            const markup = `
+            <a href ="https://www.openstreetmap.org/#map=16/${lat}/${lng}">
+            Your current position: Latitude:${lat} Longtitude:${lng}. 
+            </a> 
+            `;
+
+            document.getElementById('output').innerHTML=markup;
+
+            // navigator.geolocation.clearWatch(id);
+
+        }
+
+        function error(err){
+            if (err.code === 1){
+                alert("Please allow access to geolocation");
+            }
+            else{
+                alert("Position unavailable");
+            }
+
+        }
+
+//         function send_handle(){
+
+//             let num=document.getElementById("number").value;
+
+//             // let msg= document.getElementById("msg").value;
+
+//             let name= document.getElementById("name").value;
+
+//             var win = window.open(`https://api.whatsapp.com/send/?phone=918967676009&text=HELLO+World&type=phone_number&app_absent=0`, '_blank');
+// // win.focus();
+//     }
+        
+        const options = {
+
+            enableHighAccuracy: true,
+            timeout:5000,
+            maximumAge: 0,
+
+
+        };
+        const id = navigator.geolocation.getCurrentPosition(success, error, options);
+    </script>
 </html>
