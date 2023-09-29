@@ -1,56 +1,22 @@
 <html>
     <head>
-        <title>
-            location
-        </title>
+        <title>MSG SENDER</title>
     </head>
     <body>
         
-        <h1>HTML5 GEOLOCATION API </h1>
-        <div id="output"></div>
+        <input type="text" class="msg">
+        <button type="button" onclick="sendwhatsapp()">send</button>
 
+        <script>
+            function sendwhatsapp(){
+                var phonenumber = "+917001926534"
+                var msg = document.querySelector('.msg').value;
+
+                var url = "https.//wa.me/"+phonenumber + "?text="
+                +msg+"%0a"
+
+                window.open(url, ' blank').focus();
+            }
+        </script>
     </body>
-    <script>
-
-        if(!navigator.geolocation){
-            throw new Error("NO geolocation available");
-        }
-
-        function success(pos){
-
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-
-            const markup = `
-            <a href ="https://www.openstreetmap.org/#map=16/${lat}/${lng}">
-            Your current position: Latitude:${lat} Longtitude:${lng}. 
-            </a> 
-            `;
-
-            document.getElementById('output').innerHTML=markup;
-
-            // navigator.geolocation.clearWatch(id);
-
-        }
-
-        function error(err){
-            if (err.code === 1){
-                alert("Please allow access to geolocation");
-            }
-            else{
-                alert("Position unavailable");
-            }
-
-        }
-        
-        const options = {
-
-            enableHighAccuracy: true,
-            timeout:5000,
-            maximumAge: 0,
-
-
-        };
-        const id = navigator.geolocation.getCurrentPosition(success, error, options);
-    </script>
 </html>
