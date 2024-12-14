@@ -1,95 +1,73 @@
-<html>
-    <head>
-        <title>
-            location
-        </title>
-    </head>
-    <body>
-        
-        <h1>KIDSZOONER </h1>
-        <div id="output"></div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Sensor - Arduino Serial Communication</title>
+</head>
+<body>
 
-        <div>
-        <input id="number" type="numric" placeholder="Phone number" >
-        <input id="name"type="text" placeholder="Relation">
-        <button onclick="send_handle()">send</button>
-        </div>
+<h1>Pulse Sensor Data</h1>
+<p>Pulse Rate (BPM): <span id="pulseRate">Waiting for data...</span></p>
 
-        <div id="output1"></div> 
+<button id="connectButton">Connect to Arduino</button>
+<div id="status">Disconnected</div>
 
-        <!-- <div class="box">
-            <form>
-                <h2>LLD</h2>
-                <div class="inputBox">
-                    <input type="text" required="required">
-                    <span>Number</span>
-                    <i></i>
-                </div>
-                <div class="inputBox">
-                    <input type="text" required="required">
-                    <span>Relation</span>
-                    <i></i>
-                </div>
-            </form> 
-        </div> -->
-
-    </body>
-    <script>
-
-        if(!navigator.geolocation){
-            throw new Error("NO geolocation available");
-        }
-
-        function success(pos){
-
-            const lat = pos.coords.latitude;
-            const lng = pos.coords.longitude;
-            let num=document.getElementById("number").value;
-
-            // let msg= document.getElementById("msg").value;
-
-            //  let name= document.getElementById("name").value;
-
-            const markup = `
-            <a class ="" href ="https://www.openstreetmap.org/#map=16/${lat}/${lng}">
-            Your current position: Latitude:${lat} Longtitude:${lng}. 
-            </a> 
-            `;
-
-            const markup1 = `
-                <a class="btn" href ="https://wa.me/918967676009?text=I%27m%20in%20Danger%20at%20this%20location%20lat:%20${lat}%20lng:%20${lng}">DANGER!!!</a>
-            `
-
-
-            document.getElementById('output').innerHTML=markup;
-            document.getElementById('output1').innerHTML=markup1;
-
-            // navigator.geolocation.clearWatch(id);
-
-        }
-
-        function error(err){
-            if (err.code === 1){
-                alert("Please allow access to geolocation");
-            }
-            else{
-                alert("Position unavailable");
-            }
-
-        }
-
-        function send_handle(){
-// win.focus();
+<script>
+    let port;
+    let reader;
+    let writer;
+    
+    // Check if the browser supports the Web Serial API
+    if ('serial' in navigator) {
+        console.log("Web Serial API is supported!");
+    } else {
+        alert("Web Serial API is not supported by your browser.");
     }
-        
-        const options = {
 
-            enableHighAccuracy: true,
-            timeout:5000,
-            maximumAge: 0,
+    // Handle the connect button click
+    document.getElementById('connectButton').addEventListener('click', async () => {
+        try {
+            port = await navigator.serial.requestPort();  // Ask the user to choose a port
+            await port.open({ baudRate: 9600 });
 
+            // Show the status
+            document.getElementById('status').textContent = "Connected to Arduino";
 
-        };
-        const id = navigator.geolocation.getCurrentPosition(success, error, options);
-    </script>
+            // Setup reader and writer to communicate with the Arduino
+            reader = port.readable.getReader();
+            writer = port.writable.getWriter();
+
+            // Start reading pulse data from the Arduino
+            readPulseData();
+
+        } catch (error) {
+            console.error("Error opening port: ", error);
+            document.getElementById('status').textContent = "Failed to connect";
+        }
+    });
+
+    // Function to read data from Arduino (pulse rate)
+    async function readPulseData() {
+        while (port.readable) {
+            try {
+                const { value, done } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                // Convert the received bytes into a string and display the pulse rate
+                const pulseRate = new TextDecoder().decode(value).trim();
+                console.log("Pulse rate from Arduino: ", pulseRate);
+
+                // Update the pulse rate in the UI
+                document.getElementById('pulseRate').textContent = pulseRate;
+            } catch (error) {
+                console.error("Error reading from Arduino: ", error);
+            }
+        }
+    }
+</script>
+
+</body>
 </html>
