@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulse Sensor - Arduino Serial Communication</title>
+</head>
+<body>
+
+<h1>Pulse Sensor Data</h1>
+<p>Pulse Rate (BPM): <span id="pulseRate">Waiting for data...</span></p>
+
+<button id="connectButton">Connect to Arduino</button>
+<div id="status">Disconnected</div>
+
+<script>
+    let port;
+    let reader;
+    let writer;
+    
+    // Check if the browser supports the Web Serial API
+    if ('serial' in navigator) {
+        console.log("Web Serial API is supported!");
+    } else {
+        alert("Web Serial API is not supported by your browser.");
+    }
+
+    // Handle the connect button click
+    document.getElementById('connectButton').addEventListener('click', async () => {
+        try {
+            port = await navigator.serial.requestPort();  // Ask the user to choose a port
+            await port.open({ baudRate: 9600 });
+
+            // Show the status
+            document.getElementById('status').textContent = "Connected to Arduino";
+
+            // Setup reader and writer to communicate with the Arduino
+            reader = port.readable.getReader();
+            writer = port.writable.getWriter();
+
+            // Start reading pulse data from the Arduino
+            readPulseData();
+
+        } catch (error) {
+            console.error("Error opening port: ", error);
+            document.getElementById('status').textContent = "Failed to connect";
+        }
+    });
+
+    // Function to read data from Arduino (pulse rate)
+    async function readPulseData() {
+        while (port.readable) {
+            try {
+                const { value, done } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                // Convert the received bytes into a string and display the pulse rate
+                const pulseRate = new TextDecoder().decode(value).trim();
+                console.log("Pulse rate from Arduino: ", pulseRate);
+
+                // Update the pulse rate in the UI
+                document.getElementById('pulseRate').textContent = pulseRate;
+            } catch (error) {
+                console.error("Error reading from Arduino: ", error);
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
